@@ -16,31 +16,38 @@ try:
 except Exception, e:
     print e
     sys.exit(1)
+try:
+    cur = conn.cursor()
+    cur.execute('DROP TABLE IF EXISTS test')
+    cur.execute('CREATE TABLE test(id INT PRIMARY KEY AUTO_INCREMENT, \
+                value VARCHAR(25))')
 
-cur = conn.cursor()
-cur.execute('DROP TABLE IF EXISTS test')
-cur.execute('CREATE TABLE test(id INT PRIMARY KEY AUTO_INCREMENT, \
-            value VARCHAR(25))')
+    # Add
+    cur.execute('INSERT INTO test(value) VALUES(%s)', ('ab',))
 
-# Add
-cur.execute('INSERT INTO test(value) VALUES(%s)', ('ab',))
+    #'''This a sample of executemany
+    cur.executemany('INSERT INTO test(value) VALUES(%s)', (
+        ('d',),
+        ('e',),
+        ('f',),
+    ))
+    #'''
 
-#'''This a sample of executemany
-cur.executemany('INSERT INTO test(value) VALUES(%s)', (
-    ('d',),
-    ('e',),
-    ('f',),
-))
-#'''
+    # Delete
+    cur.execute('DELETE FROM test WHERE id=%s', (2,))
 
-# Delete
-cur.execute('DELETE FROM test WHERE id=%s', (2,))
+    # Update
+    cur.execute('UPDATE test SET value=%s WHERE id=%s', ('abck', 3))
+    cur.execute('SELECT * FROM test')
+    print cur.fetchall()
 
-# Update
-cur.execute('UPDATE test SET value=%s WHERE id=%s', ('abck', 3))
-cur.execute('SELECT * FROM test')
-print cur.fetchall()
-# Search
+    # Search
 
-conn.commit()
-conn.close()
+    conn.commit()
+except mdb.Error, e:
+    print e
+    if conn:
+        cur.rollback()
+finally:
+    if conn:
+        conn.close()
